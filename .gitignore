@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Environment
+.venv/
+venv/
+env/
+ENV/
+.venv312/
+
+# Database
+*.db
+instance/
+
+# Env vars
+.env
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.txt
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# VS Code settings
+.vscode/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific
+.idea/
+*.sublime-project
+*.sublime-workspace

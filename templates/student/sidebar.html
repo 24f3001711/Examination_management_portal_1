@@ -1,0 +1,37 @@
+<ul class="nav nav-pills flex-column p-3" id="examiner-sidebar">
+    <li class="nav-item mb-2">
+        <button
+            class="nav-link {% if not search %}active{% endif %} text-white text-start w-100 d-flex align-items-center gap-2"
+            data-bs-toggle="pill" data-bs-target="#student-dashboard" type="button">
+            <i class="bi bi-speedometer2"></i>My Dashboard
+        </button>
+    </li>
+    <li class="nav-item mb-2">
+        <button class="nav-link text-white text-start w-100 d-flex align-items-center gap-2" data-bs-toggle="pill"
+            data-bs-target="#available-examinations" type="button">
+            <i class="bi bi-compass"></i> Examination
+        </button>
+    </li>
+    <li class="nav-item mb-2">
+        <button class="nav-link text-white text-start w-100 d-flex align-items-center gap-2" data-bs-toggle="pill"
+            data-bs-target="#schedule" type="button">
+            <i class="bi bi-book"></i>My Schedule
+        </button>
+    </li>
+    <li class="nav-item mb-2">
+        <button class="nav-link text-white text-start w-100 d-flex align-items-center gap-2" data-bs-toggle="pill"
+            data-bs-target="#results" type="button">
+            <i class="bi bi-book"></i>My Result
+        </button>
+    </li>
+
+    <li class="nav-item mt-3">
+        <a class="nav-link text-white text-start w-100 d-flex align-items-center gap-2"
+            href="{{ url_for('examiner.logout') }}">
+            <i class="bi bi-box-arrow-right"></i>Logout
+        </a>
+    </li>
+</ul>
+
+
+

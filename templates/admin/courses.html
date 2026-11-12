@@ -1,0 +1,101 @@
+<section class="card shadow-sm mb-4" id="course-list">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Courses</h2>
+        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal"
+            data-bs-target="#create-course">Create course</button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr><th>ID</th><th>Course</th><th>Description</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>#{{ course.id }}</td>
+                    <td><strong>{{ course.course_code }}</strong><br>{{ course.course_name }}</td>
+                    <td>{{ course.description or "-" }}</td>
+                    <td>{{ course.status }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal"
+                            data-bs-target="#course-{{ course.id }}">Edit</button>
+                        {% if not course.examinations %}
+                        <form class="mt-2" method="POST" action="{{ url_for('admin.delete_courses', course_id=course.id) }}">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center text-muted py-4">No courses found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal fade" id="create-course" tabindex="-1" aria-labelledby="create-course-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.create_course') }}">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="create-course-label">Create course</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" for="new-course-code">Course code</label>
+                    <input class="form-control mb-3" id="new-course-code" name="course_code" required>
+                    <label class="form-label" for="new-course-name">Course name</label>
+                    <input class="form-control mb-3" id="new-course-name" name="course_name" required>
+                    <label class="form-label" for="new-course-description">Description</label>
+                    <textarea class="form-control mb-3" id="new-course-description" name="course_description" required></textarea>
+                    <label class="form-label" for="new-course-status">Status</label>
+                    <select class="form-select" id="new-course-status" name="course_status">
+                        <option value="Active" selected>Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Create course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% for course in courses %}
+<div class="modal fade" id="course-{{ course.id }}" tabindex="-1"
+    aria-labelledby="course-label-{{ course.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.update_courses', course_id=course.id) }}">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="course-label-{{ course.id }}">Edit course</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" for="course-code-{{ course.id }}">Course code</label>
+                    <input class="form-control mb-3" id="course-code-{{ course.id }}" name="course_code"
+                        value="{{ course.course_code }}" required>
+                    <label class="form-label" for="course-name-{{ course.id }}">Course name</label>
+                    <input class="form-control mb-3" id="course-name-{{ course.id }}" name="course_name"
+                        value="{{ course.course_name }}" required>
+                    <label class="form-label" for="course-description-{{ course.id }}">Description</label>
+                    <textarea class="form-control mb-3" id="course-description-{{ course.id }}"
+                        name="description">{{ course.description or '' }}</textarea>
+                    <label class="form-label" for="course-status-{{ course.id }}">Status</label>
+                    <select class="form-select" id="course-status-{{ course.id }}" name="status">
+                        <option value="Active" {% if course.status == "Active" %}selected{% endif %}>Active</option>
+                        <option value="Inactive" {% if course.status == "Inactive" %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Save changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}

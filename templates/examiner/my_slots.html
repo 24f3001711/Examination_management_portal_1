@@ -1,0 +1,38 @@
+<div class="card shadow-sm">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+
+        <h5 class="mb-0">My Examination Slots</h5>
+
+        <span class="badge text-bg-primary">
+            {{ slots|length }}
+        </span>
+
+    </div>
+
+    <div class="card-body">
+
+
+        <h6 class="mt-4 mb-3">Created slots</h6>
+
+        {% for slot in slots %}
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom py-3">
+            <div>
+                <strong>{{ slot.examination.name }}</strong>
+                <div class="small text-muted">
+                    {{ slot.date }} | {{ slot.start_time }} - {{ slot.end_time }}
+                </div>
+            </div>
+
+            <button class="btn btn-outline-primary btn-sm" type="button"
+                data-bs-toggle="modal" data-bs-target="#slotStudents{{ slot.id }}">
+                View booked students
+            </button>
+        </div>
+        {% else %}
+        <p class="text-center text-muted py-3 mb-0">No slots created yet.</p>
+        {% endfor %}
+
+    </div>
+
+</div>

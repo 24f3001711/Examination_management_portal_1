@@ -1,0 +1,90 @@
+<section class="card shadow-sm mb-4" id="examiner-list">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Examiners</h2>
+        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal"
+            data-bs-target="#add-examiner">Add examiner</button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr><th>ID</th><th>Name</th><th>Email</th><th>Employee ID</th><th>Status</th><th>Update status</th></tr>
+            </thead>
+            <tbody>
+                {% for examiner in examiners %}
+                <tr>
+                    <td>#{{ examiner.id }}</td><td>{{ examiner.name }}</td><td>{{ examiner.email }}</td>
+                    <td>{{ examiner.examiner_profile.employee_id if examiner.examiner_profile else "-" }}</td>
+                    <td>{{ examiner.status }}</td>
+                    <td>
+                        <form class="d-flex gap-2" method="POST"
+                            action="{{ url_for('admin.update_examiner_status', user_id=examiner.id) }}">
+                            <select class="form-select form-select-sm" name="status" aria-label="Examiner status">
+                                {% for status in ["Pending", "Approved", "Deactivated", "Blocked"] %}
+                                <option value="{{ status }}" {% if examiner.status == status %}selected{% endif %}>{{ status }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted">No examiners found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal fade" id="add-examiner" tabindex="-1" aria-labelledby="add-examiner-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.examiners') }}">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="add-examiner-label">Add examiner</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="examiner-name">Name</label>
+                            <input class="form-control" id="examiner-name" name="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="examiner-email">Email</label>
+                            <input class="form-control" type="email" id="examiner-email" name="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="examiner-password">Password</label>
+                            <input class="form-control" type="password" id="examiner-password" name="password"
+                                minlength="8" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="examiner-phone">Phone</label>
+                            <input class="form-control" id="examiner-phone" name="phone">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="examiner-department">Department</label>
+                            <input class="form-control" id="examiner-department" name="department" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="examiner-designation">Designation</label>
+                            <input class="form-control" id="examiner-designation" name="designation" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="examiner-employee-id">Employee ID</label>
+                            <input class="form-control" id="examiner-employee-id" name="employee_id" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="examiner-qualification">Qualification</label>
+                            <input class="form-control" id="examiner-qualification" name="qualification">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Add examiner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

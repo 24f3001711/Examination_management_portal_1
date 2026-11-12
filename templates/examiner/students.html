@@ -1,0 +1,73 @@
+{% for slot in slots %}
+
+<div class="modal fade" id="slotStudents{{ slot.id }}" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Booked Students</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <h6>{{ slot.examination.name }}</h6>
+                <p>{{ slot.date }} | {{ slot.start_time }} - {{ slot.end_time }}</p>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Evaluation</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for booking in slot.bookings if booking.status == "Booked" %}
+
+                            <tr>
+                                <td>{{ booking.student.name }}</td>
+                                <td>{{ booking.student.email }}</td>
+                                <td>{{ booking.status }}</td>
+
+                                <td>
+                                    {% if booking.evaluation %}
+                                        Completed
+                                    {% else %}
+                                        Pending
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% with booking=booking, examination=slot.examination %}
+                                        {% include "examiner/evaluate.html" %}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    No booked students for this slot.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endfor %}

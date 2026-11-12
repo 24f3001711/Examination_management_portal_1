@@ -1,0 +1,24 @@
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="{{ url_for('student.update_profile') }}">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="profileModalLabel">Update student profile</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" for="profile-name">Name</label>
+                    <input class="form-control mb-3" id="profile-name" name="name" required value="{{ student.name }}">
+                    <label class="form-label" for="profile-email">Email</label>
+                    <input class="form-control mb-3" type="email" id="profile-email" name="email" required value="{{ student.email }}">
+                    <label class="form-label" for="profile-phone">Phone</label>
+                    <input class="form-control" id="profile-phone" name="phone" value="{{ student.phone or '' }}">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-light" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Save profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

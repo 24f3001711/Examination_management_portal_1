@@ -1,0 +1,59 @@
+{% set rubrics = rubrics_by_examination.get(examination.id, []) %}
+
+{% if rubrics %}
+<form method="POST" action="{{ url_for('examiner.evaluate_student', booking_id=booking.id) }}">
+
+    <h6>{% if booking.evaluation %}Update{% else %}Evaluate{% endif %} Student: {{ booking.student.name }}</h6>
+
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Criteria</th>
+                <th>Description</th>
+                <th>Maximum Marks</th>
+                <th>Marks Awarded</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rubric in rubrics %}
+            <tr>
+                <td>{{ rubric.criterion_name }}</td>
+                <td>{{ rubric.description }}</td>
+                <td>{{ rubric.maximum_marks }}</td>
+                <td>
+                    {% set saved_mark = namespace(value='') %}
+                    {% if booking.evaluation %}
+                        {% for detail in booking.evaluation.details %}
+                            {% if detail.rubric_id == rubric.id %}
+                                {% set saved_mark.value = detail.marks_awarded %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <input type="number"
+                           name="marks_{{ rubric.id }}"
+                           class="form-control"
+                           min="0"
+                           max="{{ rubric.maximum_marks }}"
+                           step="any"
+                           value="{{ saved_mark.value }}"
+                           required>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mb-3">
+        <label class="form-label">Remarks</label>
+        <textarea name="remarks"
+                  class="form-control"
+                  rows="3">{% if booking.evaluation %}{{ booking.evaluation.remarks or '' }}{% endif %}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        {% if booking.evaluation %}Update Evaluation{% else %}Submit Evaluation{% endif %}
+    </button>
+</form>
+{% else %}
+<span class="text-muted">No evaluation rubrics configured.</span>
+{% endif %}

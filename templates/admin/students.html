@@ -1,0 +1,35 @@
+<section class="card shadow-sm mb-4" id="student-list">
+    <div class="card-header">
+        <h1 class="h4 mb-0">Students</h1>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr><th>ID</th><th>Name</th><th>Email</th><th>Status</th><th>Update status</th></tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>#{{ student.id }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.email }}</td>
+                    <td>{{ student.status }}</td>
+                    <td>
+                        <form class="d-flex gap-2" method="POST"
+                            action="{{ url_for('admin.update_student_status', user_id=student.id) }}">
+                            <select class="form-select form-select-sm" name="status" aria-label="Student status">
+                                {% for status in ["Pending", "Approved", "Deactivated", "Blocked"] %}
+                                <option value="{{ status }}" {% if student.status == status %}selected{% endif %}>{{ status }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center text-muted">No students found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>

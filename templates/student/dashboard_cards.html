@@ -1,0 +1,42 @@
+<section>
+    <h1 class="h3 mb-4">Student Dashboard</h1>
+
+    <div class="row g-4">
+
+        {% for label, value, icon, color in [
+            ("Available Examinations", examinations|length, "bi-journal-check", "primary"),
+            ("Upcoming Examinations", upcoming_bookings|length, "bi-calendar2-check", "success"),
+            ("Published Results", published_results|length, "bi-trophy", "warning")
+        ] %}
+
+        <div class="col-sm-6 col-xl-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body d-flex align-items-center gap-3">
+
+                    <i class="bi {{ icon }} fs-1 text-{{ color }}"
+                       aria-hidden="true"></i>
+
+                    <div>
+
+                        <div class="text-muted small fw-semibold text-uppercase">
+                            {{ label }}
+                        </div>
+
+                        <div class="fs-3 fw-bold text-dark">
+                            {{ value }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+</section>

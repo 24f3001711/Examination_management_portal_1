@@ -1,0 +1,83 @@
+<section class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h1 class="h4 mb-0">Search records</h1>
+    </div>
+    <div class="card-body">
+        <form class="row g-2 mb-4" method="GET" action="{{ url_for('admin.dashboard') }}">
+            <div class="col-sm">
+                <label class="visually-hidden" for="admin-record-search">Search by name or ID</label>
+                <input class="form-control" id="admin-record-search" type="search" name="q" value="{{ search }}"
+                    placeholder="Search students, examiners, examinations, or bookings by name or ID">
+            </div>
+            <div class="col-sm-auto">
+                <button class="btn btn-primary" type="submit">Search</button>
+                {% if search %}
+                <a class="btn btn-outline-secondary" href="{{ url_for('admin.dashboard') }}">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if search %}
+        <p class="text-muted">Results for <strong>{{ search }}</strong>.</p>
+        <h2 class="h5">Examinations ({{ search_examinations|length }})</h2>
+        <div class="table-responsive mb-4">
+            <table class="table table-sm table-striped">
+                <thead><tr><th>ID</th><th>Examination</th><th>Course</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for examination in search_examinations %}
+                    <tr>
+                        <td>#{{ examination.id }}</td>
+                        <td>{{ examination.name }}</td>
+                        <td>{{ examination.course.course_name if examination.course else "-" }}</td>
+                        <td>{{ examination.status }}</td>
+                    </tr>
+                    {% else %}<tr><td colspan="4" class="text-muted">No examinations found.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="h5">Students ({{ search_students|length }})</h2>
+        <div class="table-responsive mb-4">
+            <table class="table table-sm table-striped">
+                <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for student in search_students %}
+                    <tr><td>#{{ student.id }}</td><td>{{ student.name }}</td><td>{{ student.email }}</td><td>{{ student.status }}</td></tr>
+                    {% else %}<tr><td colspan="4" class="text-muted">No students found.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="h5">Examiners ({{ search_examiners|length }})</h2>
+        <div class="table-responsive mb-4">
+            <table class="table table-sm table-striped">
+                <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for examiner in search_examiners %}
+                    <tr><td>#{{ examiner.id }}</td><td>{{ examiner.name }}</td><td>{{ examiner.email }}</td><td>{{ examiner.status }}</td></tr>
+                    {% else %}<tr><td colspan="4" class="text-muted">No examiners found.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="h5">Bookings ({{ search_bookings|length }})</h2>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead><tr><th>ID</th><th>Student</th><th>Examination</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for booking in search_bookings %}
+                    <tr>
+                        <td>#{{ booking.id }}</td>
+                        <td>{{ booking.student.name }}</td>
+                        <td>{{ booking.slot.examination.name }}</td>
+                        <td>{{ booking.status }}</td>
+                    </tr>
+                    {% else %}<tr><td colspan="4" class="text-muted">No bookings found.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">Enter a name or ID to search students, examiners, examinations, and bookings.</p>
+        {% endif %}
+    </div>
+</section>

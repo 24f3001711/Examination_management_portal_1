@@ -1,0 +1,50 @@
+<section class="card shadow-sm mb-4">
+    <div class="card-header">
+        <h1 class="h4 mb-0">History &amp; Records</h1>
+    </div>
+    <div class="card-body">
+        <h2 class="h5">Examination records</h2>
+        <div class="table-responsive mb-4">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr><th>ID</th><th>Examination</th><th>Course</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for examination in all_examinations %}
+                    <tr>
+                        <td>#{{ examination.id }}</td>
+                        <td>{{ examination.name }}</td>
+                        <td>{{ examination.course.course_name if examination.course else "-" }}</td>
+                        <td>{{ examination.status }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center text-muted">No examination records.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="h5">Booking records</h2>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped mb-0">
+                <thead>
+                    <tr><th>ID</th><th>Student</th><th>Examination</th><th>Slot date</th><th>Status</th><th>Booked at</th></tr>
+                </thead>
+                <tbody>
+                    {% for booking in all_bookings %}
+                    <tr>
+                        <td>#{{ booking.id }}</td>
+                        <td>{{ booking.student.name }}</td>
+                        <td>{{ booking.slot.examination.name }}</td>
+                        <td>{{ booking.slot.date }}</td>
+                        <td>{{ booking.status }}</td>
+                        <td>{{ booking.booking_date }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-muted">No booking records.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

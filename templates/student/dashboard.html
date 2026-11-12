@@ -1,0 +1,36 @@
+{% extends "index.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <aside class="col-md-3 col-lg-2 px-0 bg-dark min-vh-100">
+            {% include "student/sidebar.html" %}
+        </aside>
+        <main class="col-md-9 col-lg-10 p-4 pb-5">
+            <div class="tab-content">
+                <div class="tab-pane fade active " id="student-dashboard">
+                    {% include "student/dashboard_cards.html" %}
+                </div>
+                <div class="tab-pane fade" id="available-examinations">
+                    {% include "student/examination.html" %}
+
+                </div>
+                <div class="tab-pane fade" id="schedule">
+                    {% include "student/schedule.html" %}
+
+                </div>
+
+                <div class="tab-pane fade" id="results">
+                    {% include "student/results.html" %}
+
+                </div>
+
+                {% include "student/examination_slots.html" %}
+
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

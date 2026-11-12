@@ -1,0 +1,139 @@
+{% extends "index.html" %}
+
+{% block title %}Edit Examination Rubric{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-warning">
+            <h4 class="mb-0">Edit Examination Rubric</h4>
+        </div>
+
+        <div class="card-body">
+
+            <form
+                method="POST"
+                action="{{ url_for('admin.edit_rubric', rubric_id=rubric.id) }}"
+            >
+
+                <!-- Examination -->
+                <div class="mb-3">
+
+                    <label class="form-label">Examination</label>
+
+                    <select
+                        name="examination_id"
+                        class="form-select"
+                        required
+                    >
+
+                        {% for examination in examinations %}
+
+                            <option
+                                value="{{ examination.id }}"
+                                {% if examination.id == rubric.examination_id %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ examination.name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- Criterion Name -->
+                <div class="mb-3">
+
+                    <label class="form-label">Criterion Name</label>
+
+                    <input
+                        type="text"
+                        name="criterion_name"
+                        class="form-control"
+                        value="{{ rubric.criterion_name }}"
+                        maxlength="150"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Maximum Marks -->
+                <div class="mb-3">
+
+                    <label class="form-label">Maximum Marks</label>
+
+                    <input
+                        type="number"
+                        name="maximum_marks"
+                        class="form-control"
+                        value="{{ rubric.maximum_marks }}"
+                        min="0.01"
+                        step="0.01"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Weightage -->
+                <div class="mb-3">
+
+                    <label class="form-label">Weightage (%)</label>
+
+                    <input
+                        type="number"
+                        name="weightage"
+                        class="form-control"
+                        value="{{ rubric.weightage }}"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Description -->
+                <div class="mb-3">
+
+                    <label class="form-label">Description</label>
+
+                    <textarea
+                        name="description"
+                        class="form-control"
+                        rows="4"
+                    >{{ rubric.description or "" }}</textarea>
+
+                </div>
+
+
+                <!-- Buttons -->
+                <button type="submit" class="btn btn-success">
+                    Update Rubric
+                </button>
+
+                <a
+                    href="{{ url_for('admin.rubrics') }}"
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

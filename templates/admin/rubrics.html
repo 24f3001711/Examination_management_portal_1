@@ -1,0 +1,181 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Examination Rubric Management</h2>
+    </div>
+
+
+    <!-- Create Rubric Form -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Create New Rubric</h5>
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST" action="{{ url_for('admin.rubrics') }}">
+
+                <div class="row">
+
+                    <!-- Examination -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Select Examination</label>
+
+                        <select name="examination_id" class="form-select" required>
+                            <option value="">Choose Examination</option>
+
+                            {% for examination in examinations %}
+                            <option value="{{ examination.id }}">
+                                {{ examination.name }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </div>
+
+
+                    <!-- Criterion Name -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Criterion Name</label>
+
+                        <input type="text" name="criterion_name" class="form-control"
+                            placeholder="Example: Technical Knowledge" maxlength="150" required>
+                    </div>
+
+
+                    <!-- Maximum Marks -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Maximum Marks</label>
+
+                        <input type="number" name="maximum_marks" class="form-control" min="0.01" step="0.01"
+                            placeholder="Example: 20" required>
+                    </div>
+
+
+                    <!-- Weightage -->
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Weightage (%)</label>
+
+                        <input type="number" name="weightage" class="form-control" min="0" max="100" step="0.01"
+                            placeholder="Example: 30" required>
+                    </div>
+
+
+                    <!-- Description -->
+                    <div class="col-12 mb-3">
+                        <label class="form-label">Description</label>
+
+                        <textarea name="description" class="form-control" rows="3"
+                            placeholder="Describe the evaluation criterion..."></textarea>
+                    </div>
+
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Create Rubric
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- Rubric Listing -->
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">All Examination Rubrics</h5>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Examination</th>
+                            <th>Criterion</th>
+                            <th>Maximum Marks</th>
+                            <th>Weightage</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for rubric in rubrics %}
+
+                        <tr>
+
+                            <td>{{ rubric.id }}</td>
+
+                            <td>
+                                {{ rubric.examination.name }}
+                            </td>
+
+                            <td>
+                                {{ rubric.criterion_name }}
+                            </td>
+
+                            <td>
+                                {{ rubric.maximum_marks }}
+                            </td>
+
+                            <td>
+                                <span class="badge bg-info text-dark">
+                                    {{ rubric.weightage }}%
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ rubric.description or "N/A" }}
+                            </td>
+
+                            <td>
+
+                                <!-- Edit Button -->
+                                <a href="{{ url_for('admin.edit_rubric', rubric_id=rubric.id) }}"
+                                    class="btn btn-sm btn-warning">
+                                    Edit
+                                </a>
+
+                                <!-- Delete Button -->
+                                <form method="POST" action="{{ url_for('admin.delete_rubric', rubric_id=rubric.id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Are you sure you want to delete this rubric?');">
+
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                No examination rubrics found.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>

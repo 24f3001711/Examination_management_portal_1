@@ -1,0 +1,42 @@
+{% extends "index.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <aside class="col-md-3 col-lg-2 px-0 bg-dark min-vh-100">
+            {% include "admin/sidebar.html" %}
+        </aside>
+        <main class="col-md-9 col-lg-10 p-4 pb-5">
+            <div class="tab-content">
+                <div class="tab-pane fade {% if not search %}show active{% endif %}" id="dashboard">
+                    {% include "admin/dashboard_cards.html" %}
+                </div>
+                <div class="tab-pane fade" id="examination">
+                    {% include "admin/examination.html" %}
+                    {% include "admin/rubrics.html" %}
+                </div>
+                <div class="tab-pane fade" id="courses">
+                    {% include "admin/courses.html" %}
+                </div>
+                <div class="tab-pane fade" id="examiners">
+                    {% include "admin/examiners.html" %}
+                </div>
+                <div class="tab-pane fade" id="students">
+                    {% include "admin/students.html" %}
+                </div>
+                <div class="tab-pane fade" id="bookings">
+                    {% include "admin/bookings.html" %}
+                </div>
+                <div class="tab-pane fade {% if search %}show active{% endif %}" id="search">
+                    {% include "admin/search.html" %}
+                </div>
+                <div class="tab-pane fade" id="history">
+                    {% include "admin/history.html" %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

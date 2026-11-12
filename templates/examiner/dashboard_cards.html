@@ -1,0 +1,42 @@
+<section>
+    <h1 class="h3 mb-4">Examiner Dashboard</h1>
+
+    <div class="row g-4">
+
+        {% for label, value, icon in [
+        ("Assigned Examinations", examinations|length, "bi-journal-check"),
+        ("Created Slots", slots|length, "bi-calendar2-check"),
+        ("Booked Students", booked_students, "bi-people-fill"),
+        ("Pending Evaluations", pending_evaluations, "bi-hourglass-split"),
+        ] %}
+
+        <div class="col-sm-6 col-xl-3">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body d-flex align-items-center gap-3">
+
+                    <i class="bi {{ icon }} fs-2 text-primary" aria-hidden="true"></i>
+
+                    <div>
+
+                        <div class="text-muted small fw-semibold text-uppercase">
+                            {{ label }}
+                        </div>
+
+                        <div class="fs-3 fw-bold text-dark">
+                            {{ value }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+</section>

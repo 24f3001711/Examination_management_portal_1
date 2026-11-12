@@ -1,0 +1,266 @@
+{% extends "index.html" %}
+
+{% block title %}Examiner Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid px-0">
+    <div class="row g-0">
+
+        <aside class="col-md-3 col-lg-2 bg-dark min-vh-100">
+            {% include "examiner/sidebar.html" %}
+        </aside>
+
+        <main class="col-md-9 col-lg-10 p-4 p-lg-5">
+
+            <div class="tab-content">
+
+                <div class="tab-pane fade show active" id="examiner-dashboard">
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+
+                        <div>
+                            <p class="text-primary text-uppercase small fw-semibold mb-1">
+                                Examiner workspace
+                            </p>
+
+                            <h1 class="h2 mb-1">
+                                Welcome, {{ examiner.name }}
+                            </h1>
+
+                            <p class="text-secondary mb-0">
+                                Your assigned examinations, slots, and evaluations.
+                            </p>
+                        </div>
+
+                        <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal"
+                            data-bs-target="#profileModal">
+
+                            <i class="bi bi-person-gear me-1"></i>
+                            Update profile
+
+                        </button>
+
+                    </div>
+
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+
+                                    <div class="text-secondary small">
+                                        Assigned Examinations
+                                    </div>
+
+                                    <div class="fs-2 fw-semibold">
+                                        {{ examinations|length }}
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+
+                                    <div class="text-secondary small">
+                                        Created Slots
+                                    </div>
+
+                                    <div class="fs-2 fw-semibold">
+                                        {{ slots|length }}
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+
+                                    <div class="text-secondary small">
+                                        Booked Students
+                                    </div>
+
+                                    <div class="fs-2 fw-semibold">
+                                        {{ booked_students }}
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-body">
+
+                                    <div class="text-secondary small">
+                                        Pending Evaluations
+                                    </div>
+
+                                    <div class="fs-2 fw-semibold text-warning-emphasis">
+                                        {{ pending_evaluations }}
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="tab-pane fade" id="assigned-examinations">
+
+                    {% include "examiner/examinations.html" %}
+
+                </div>
+
+                <div class="tab-pane fade" id="my-slots">
+
+                    {% include "examiner/my_slots.html" %}
+
+                </div>
+
+            </div>
+
+
+            {% include "examiner/students.html" %}
+
+
+            <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel"
+                aria-hidden="true">
+
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+
+                    <div class="modal-content">
+
+                        <form method="post" action="{{ url_for('examiner.update_profile') }}">
+
+                            <div class="modal-header">
+
+                                <h2 class="modal-title fs-5" id="profileModalLabel">
+                                    Update examiner profile
+                                </h2>
+
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                </button>
+
+                            </div>
+
+                            <div class="modal-body">
+
+                                {% set profile = examiner.examiner_profile %}
+
+                                <div class="row g-3">
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label" for="profile-name">
+                                            Name
+                                        </label>
+
+                                        <input class="form-control" id="profile-name" name="name" required
+                                            value="{{ examiner.name }}">
+
+                                    </div>
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label" for="profile-email">
+                                            Email
+                                        </label>
+
+                                        <input class="form-control" type="email" id="profile-email" name="email"
+                                            required value="{{ examiner.email }}">
+
+                                    </div>
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label" for="profile-phone">
+                                            Phone
+                                        </label>
+
+                                        <input class="form-control" id="profile-phone" name="phone"
+                                            value="{{ examiner.phone or '' }}">
+
+                                    </div>
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label" for="profile-department">
+                                            Department
+                                        </label>
+
+                                        <input class="form-control" id="profile-department" name="department" required
+                                            value="{{ profile.department if profile else '' }}">
+
+                                    </div>
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label" for="profile-designation">
+                                            Designation
+                                        </label>
+
+                                        <input class="form-control" id="profile-designation" name="designation" required
+                                            value="{{ profile.designation if profile else '' }}">
+
+                                    </div>
+
+                                    <div class="col-md-6">
+
+                                        <label class="form-label" for="profile-employee-id">
+                                            Employee ID
+                                        </label>
+
+                                        <input class="form-control" id="profile-employee-id" name="employee_id" required
+                                            value="{{ profile.employee_id if profile else '' }}">
+
+                                    </div>
+
+                                    <div class="col-12">
+
+                                        <label class="form-label" for="profile-qualification">
+                                            Qualification
+                                        </label>
+
+                                        <input class="form-control" id="profile-qualification" name="qualification"
+                                            value="{{ profile.qualification if profile else '' }}">
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="modal-footer">
+
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+
+                                <button type="submit" class="btn btn-primary">
+                                    Save profile
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+</div>
+
+{% endblock %}

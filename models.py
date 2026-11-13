@@ -695,4 +695,4 @@ class EvaluationDetail(BaseModel):
         "ExaminationRubric",
         back_populates="evaluation_details"
     )
- #     
+ 

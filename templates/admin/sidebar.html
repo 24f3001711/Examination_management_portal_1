@@ -1,12 +1,12 @@
 <ul class="nav nav-pills flex-column p-3" id="admin-sidebar">
     <li class="nav-item mb-2">
-        <button class="nav-link {% if not search %}active{% endif %} text-white text-start w-100 d-flex align-items-center gap-2"
+        <button class="nav-link {% if active_tab == 'dashboard' %}active{% endif %} text-white text-start w-100 d-flex align-items-center gap-2"
             data-bs-toggle="pill" data-bs-target="#dashboard" type="button">
             <i class="bi bi-speedometer2"></i>Dashboard
         </button>
     </li>
     <li class="nav-item mb-2">
-        <button class="nav-link text-white text-start w-100 d-flex align-items-center gap-2"
+        <button class="nav-link {% if active_tab == 'examination' %}active{% endif %} text-white text-start w-100 d-flex align-items-center gap-2"
             data-bs-toggle="pill" data-bs-target="#examination" type="button">
             <i class="bi bi-compass"></i>Examination
         </button>
@@ -36,7 +36,7 @@
         </button>
     </li>
     <li class="nav-item mb-2">
-        <button class="nav-link {% if search %}active{% endif %} text-white text-start w-100 d-flex align-items-center gap-2"
+        <button class="nav-link {% if active_tab == 'search' %}active{% endif %} text-white text-start w-100 d-flex align-items-center gap-2"
             data-bs-toggle="pill" data-bs-target="#search" type="button">
             <i class="bi bi-search"></i>Search
         </button>

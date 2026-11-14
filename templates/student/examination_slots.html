@@ -1,0 +1,85 @@
+<section class="card shadow-sm mb-4" id="available-examination-slots">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h4 mb-0">Available Examination Slots</h2>
+        <span class="badge text-bg-primary">{{ examinations|length }}</span>
+    </div>
+
+    <div class="card-body">
+        {% for examination in examinations %}
+        {% set exam_slots = slots_by_exam.get(examination.id, []) %}
+        <article class="card mb-4">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h3 class="h5 mb-1">{{ examination.name }}</h3>
+                    <span class="small text-muted">
+                        {{ examination.course.course_code }} - {{ examination.course.course_name }}
+                        | {{ examination.examination_type }}
+                    </span>
+                </div>
+                {% if examination.id in booked_examination_ids %}
+                <span class="badge text-bg-success">Already booked</span>
+                {% elif booking_open_by_exam.get(examination.id) %}
+                <span class="badge text-bg-info">Booking open</span>
+                {% else %}
+                <span class="badge text-bg-secondary">Booking closed</span>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                {% if exam_slots %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Time</th>
+                                <th scope="col">Examiner</th>
+                                <th scope="col">Seats</th>
+                                <th scope="col" class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for slot in exam_slots %}
+                            <tr>
+                                <td>{{ slot.date.strftime("%d-%m-%Y") }}</td>
+                                <td>
+                                    {{ slot.start_time.strftime("%I:%M %p") }}
+                                    - {{ slot.end_time.strftime("%I:%M %p") }}
+                                </td>
+                                <td>{{ slot.examiner.name }}</td>
+                                <td>{{ slot.available_seats }} / {{ slot.maximum_capacity }}</td>
+                                <td class="text-end">
+                                    {% if slot.id in booked_slot_ids %}
+                                    <span class="badge text-bg-success">Booked</span>
+                                    {% elif examination.id in booked_examination_ids %}
+                                    <span class="text-muted">Already booked</span>
+                                    {% elif not booking_open_by_exam.get(examination.id) %}
+                                    <span class="text-muted">Booking closed</span>
+                                    {% elif slot.status != "Available" or slot.available_seats <= 0 %}
+                                    <span class="badge text-bg-secondary">Full</span>
+                                    {% else %}
+                                    <form method="POST"
+                                          action="{{ url_for('student.book_slot', slot_id=slot.id) }}">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            Book slot
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">No slots are available for this examination yet.</p>
+                {% endif %}
+            </div>
+        </article>
+        {% else %}
+        <p class="text-center text-muted mb-0">
+            No examinations are currently available.
+        </p>
+        {% endfor %}
+    </div>
+</section>

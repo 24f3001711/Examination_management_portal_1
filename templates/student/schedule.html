@@ -1,0 +1,115 @@
+<div class="d-grid gap-4">
+    <section class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h4 mb-0">Upcoming Examinations</h2>
+            <span class="badge text-bg-primary">{{ upcoming_bookings|length }}</span>
+        </div>
+
+        <div class="card-body">
+            {% if upcoming_bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Examination</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Examiner</th>
+                            <th scope="col">Status</th>
+                            <th scope="col" class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in upcoming_bookings %}
+                        <tr>
+                            <td>
+                                <strong>{{ booking.slot.examination.name }}</strong>
+                                <div class="small text-muted">
+                                    {{ booking.slot.examination.course.course_code }}
+                                    - {{ booking.slot.examination.course.course_name }}
+                                </div>
+                            </td>
+                            <td>{{ booking.slot.date.strftime("%d-%m-%Y") }}</td>
+                            <td>
+                                {{ booking.slot.start_time.strftime("%I:%M %p") }}
+                                - {{ booking.slot.end_time.strftime("%I:%M %p") }}
+                            </td>
+                            <td>{{ booking.slot.examiner.name }}</td>
+                            <td><span class="badge text-bg-success">{{ booking.status }}</span></td>
+                            <td class="text-end">
+                                {% if booking.id in cancellable_booking_ids %}
+                                <form method="POST"
+                                      action="{{ url_for('student.cancel_booking', booking_id=booking.id) }}"
+                                      onsubmit="return confirm('Cancel this examination booking?')">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        Cancel booking
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="small text-muted">Cancellation closed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">You have no upcoming examination bookings.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h4 mb-0">Booking History</h2>
+            <span class="badge text-bg-secondary">{{ history_bookings|length }}</span>
+        </div>
+
+        <div class="card-body">
+            {% if history_bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Examination</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Time</th>
+                            <th scope="col">Examiner</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in history_bookings %}
+                        <tr>
+                            <td>
+                                <strong>{{ booking.slot.examination.name }}</strong>
+                                <div class="small text-muted">
+                                    {{ booking.slot.examination.course.course_code }}
+                                    - {{ booking.slot.examination.course.course_name }}
+                                </div>
+                            </td>
+                            <td>{{ booking.slot.date.strftime("%d-%m-%Y") }}</td>
+                            <td>
+                                {{ booking.slot.start_time.strftime("%I:%M %p") }}
+                                - {{ booking.slot.end_time.strftime("%I:%M %p") }}
+                            </td>
+                            <td>{{ booking.slot.examiner.name }}</td>
+                            <td>
+                                {% if booking.status == "Cancelled" %}
+                                <span class="badge text-bg-secondary">{{ booking.status }}</span>
+                                {% else %}
+                                <span class="badge text-bg-primary">{{ booking.status }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">Your booking history will appear here.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>

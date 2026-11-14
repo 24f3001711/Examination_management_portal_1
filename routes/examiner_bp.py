@@ -38,18 +38,43 @@ def _booking_started(examination):
         and datetime.now() >= examination.slot_booking_start
     )
 
- 
- 
+
+def _slot_form_data():
+    try:
+        slot_date = datetime.strptime(
+            request.form.get("date", ""), "%Y-%m-%d"
+        ).date()
+        start_time = datetime.strptime(
+            request.form.get("start_time", ""), "%H:%M"
+        ).time()
+        end_time = datetime.strptime(
+            request.form.get("end_time", ""), "%H:%M"
+        ).time()
+        capacity = int(request.form.get("maximum_capacity", ""))
+    except (TypeError, ValueError):
+        return None
+
+    if start_time >= end_time or capacity <= 0:
+        return None
+
+    return slot_date, start_time, end_time, capacity
+
 
 def render_examiner_dashboard(examiner):
-    examinations = Examination.query.filter(
-        Examination.slots.any(examiner_id=examiner.id)
-    ).all()
     slots = (
         ExaminationSlot.query.filter_by(examiner_id=examiner.id)
         .order_by(ExaminationSlot.date, ExaminationSlot.start_time)
         .all()
     )
+    assigned_examination_ids = {slot.examination_id for slot in slots}
+    examinations = [
+        examination
+        for examination in Examination.query.all()
+        if (
+            examination.id in assigned_examination_ids
+            or _slot_creation_open(examination)
+        )
+    ]
     booked_students = Booking.query.filter(
         Booking.status == "Booked",
         Booking.slot.has(examiner_id=examiner.id),
@@ -191,23 +216,15 @@ def create_slot(examination_id, current_user):
         flash("No examination found.", "danger")
         return redirect(url_for("examiner.dashboard"))
 
-    date = datetime.strptime(
-        request.form.get("date", ""), "%Y-%m-%d"
-    ).date()
-
-    start_time = datetime.strptime(
-        request.form.get("start_time", ""), "%H:%M"
-    ).time()
-
-    end_time = datetime.strptime(
-        request.form.get("end_time", ""), "%H:%M"
-    ).time()
-
-    capacity = int(request.form.get("maximum_capacity", ""))
-
-    if start_time >= end_time or capacity <= 0:
-        flash("Invalid slot details.", "danger")
+    if not _slot_creation_open(examination):
+        flash("Slot creation is not open for this examination.", "warning")
         return redirect(url_for("examiner.dashboard"))
+
+    slot_data = _slot_form_data()
+    if not slot_data:
+        flash("Enter a valid date, time range, and capacity.", "danger")
+        return redirect(url_for("examiner.dashboard"))
+    date, start_time, end_time, capacity = slot_data
 
     # Check overlapping slots
     conflict = ExaminationSlot.query.filter(
@@ -258,23 +275,11 @@ def update_slot(slot_id, current_user):
         )
         return redirect(url_for("examiner.dashboard"))
 
-    date = datetime.strptime(
-        request.form.get("date", ""), "%Y-%m-%d"
-    ).date()
-
-    start_time = datetime.strptime(
-        request.form.get("start_time", ""), "%H:%M"
-    ).time()
-
-    end_time = datetime.strptime(
-        request.form.get("end_time", ""), "%H:%M"
-    ).time()
-
-    capacity = int(request.form.get("maximum_capacity", ""))
-
-    if start_time >= end_time or capacity <= 0:
-        flash("Invalid slot details.", "danger")
+    slot_data = _slot_form_data()
+    if not slot_data:
+        flash("Enter a valid date, time range, and capacity.", "danger")
         return redirect(url_for("examiner.dashboard"))
+    date, start_time, end_time, capacity = slot_data
 
     # Check overlapping slots
     conflict = ExaminationSlot.query.filter(

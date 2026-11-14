@@ -23,8 +23,7 @@ def _booking_open(examination):
 
     now=datetime.now()
 
-    # Booking ? Admin booking enable ? Booking start time is defined ? Booking End time is defined ? Current time start b/w end 
-
+    
     return(
         examination.booking_open and examination.slot_booking_start and examination.slot_booking_end and examination.slot_booking_start <=now <= examination.slot_booking_end
     )
@@ -42,6 +41,14 @@ def dashboard(current_user):
     search=request.args.get("q","").strip()
     course_id=request.args.get("course_id",type=int)
     examination_type= request.args.get("type","").strip()
+    active_tab = request.args.get("tab", "student-dashboard")
+    if active_tab not in {
+        "student-dashboard",
+        "available-examinations",
+        "schedule",
+        "results",
+    }:
+        active_tab = "student-dashboard"
 
     # fetch active courses ? examinations 
     examinations_query=Examination.query.join(Course).filter(Course.status=="Active",Examination.status.notin_(["Draft","Cancelled","Completed"]))
@@ -93,21 +100,51 @@ def dashboard(current_user):
 
 
 
-    Upcoming_bookings=[booking for booking in bookings
-                       if booking.status !="Booked"
-                       or booking.slot.date >= datetime.now().date()
-                       ]
-    # boking history 
-
-    history_bookings=[booking for booking in bookings
-                       if booking.status !="Booked"
-                       or booking.slot.date < datetime.now().date()
-                       ]
+    now = datetime.now()
+    today = now.date()
+    Upcoming_bookings = sorted(
+        (
+            booking
+            for booking in bookings
+            if booking.status == "Booked" and booking.slot.date >= today
+        ),
+        key=lambda booking: (booking.slot.date, booking.slot.start_time),
+    )
+    history_bookings = sorted(
+        (
+            booking
+            for booking in bookings
+            if booking.status != "Booked" or booking.slot.date < today
+        ),
+        key=lambda booking: (booking.slot.date, booking.slot.start_time),
+        reverse=True,
+    )
+    cancellable_booking_ids = {
+        booking.id
+        for booking in bookings
+        if (
+            booking.status == "Booked"
+            and booking.slot.examination.slot_booking_end
+            and now < booking.slot.examination.slot_booking_end
+        )
+    }
 
     # result 
     published_results=[booking for booking in bookings
                        if booking.evaluation and booking.evaluation.is_published
                        ]
+    booked_slot_ids = {
+        booking.slot_id for booking in bookings if booking.status == "Booked"
+    }
+    booked_examination_ids = {
+        booking.slot.examination_id
+        for booking in bookings
+        if booking.status == "Booked"
+    }
+    booking_open_by_exam = {
+        examination.id: _booking_open(examination)
+        for examination in examinations
+    }
 
 
     # Active Courses 
@@ -124,11 +161,16 @@ def dashboard(current_user):
     bookings=bookings,
     upcoming_bookings=Upcoming_bookings,
     history_bookings=history_bookings,
+    cancellable_booking_ids=cancellable_booking_ids,
     published_results=published_results,
+    booked_slot_ids=booked_slot_ids,
+    booked_examination_ids=booked_examination_ids,
+    booking_open_by_exam=booking_open_by_exam,
     courses=courses,
     search=search,
     selected_course=course_id,
     selected_type=examination_type,
+    active_tab=active_tab,
 
 )
             
@@ -224,46 +266,41 @@ def book_slot(slot_id, current_user):
     examination=slot.examination
 
     # is booking open 
-    if _booking_open(examination):
+    if not _booking_open(examination):
         flash("Booking is not open for this examination","warning")
-        return redirect(url_for("student.dashboard"))
+        return redirect(url_for("student.dashboard", tab="available-examinations"))
 
     # slot avialbe ? 
     if slot.status != "Available" or slot.available_seats <= 0:
         flash("Slot is not  Available/Full","danger")
-        return redirect(url_for("student.dashboard"))
+        return redirect(url_for("student.dashboard", tab="available-examinations"))
 
+    remaining_seats = slot.available_seats
  
 
 
     # prevent duplicate booking 
-    duplicate=(
-        Booking.query.join(ExaminationSlot).filter(
+    duplicate = Booking.query.join(ExaminationSlot).filter(
             Booking.student_id == current_user.id,
-            Booking.status=="Booking",
-            ExaminationSlot.examination_id==ExaminationSlot
+            Booking.status == "Booked",
+            ExaminationSlot.examination_id == examination.id,
         ).first()
-    )
 
     if duplicate:
         flash("You have already booked for this exam","danger")
-        return redirect(url_for("student.dashboard"))
+        return redirect(url_for("student.dashboard", tab="available-examinations"))
 
 
     # create new booking 
-    booking=Booking(
+    booking = Booking(
         student_id=current_user.id,
-        slot_id=slot.id,
+        slot=slot,
         status="Booked"
     )
 
-    # Decrease available seats
-    slot.available_seats -= 1
-
-
     db.session.add(booking)
 
-    if slot.available_seats == 0:
+    if remaining_seats == 1:
         slot.status="Full"
 
 
@@ -272,7 +309,7 @@ def book_slot(slot_id, current_user):
 
     flash("Examination slot updated successfully!", "success")
 
-    return redirect(url_for("student.dashboard"))
+    return redirect(url_for("student.dashboard", tab="available-examinations"))
 
 
 
@@ -292,22 +329,20 @@ def cancel_booking(booking_id, current_user):
 
     if booking.status != "Booked":
         flash("Only booked slots can be cancelled.", "warning")
-        return redirect(url_for("student.dashboard"))
+        return redirect(url_for("student.dashboard", tab="schedule"))
 
      
-    if datetime.now() > examination.slot_booking_end:
+    if (
+        not examination.slot_booking_end
+        or datetime.now() >= examination.slot_booking_end
+    ):
         flash("Booking cancellation deadline has passed.", "danger")
-        return redirect(url_for("student.dashboard"))
+        return redirect(url_for("student.dashboard", tab="schedule"))
 
     
     booking.status = "Cancelled"
 
-    
-    slot.available_seats += 1
-
-
- 
-    if slot.status == "Full":
+    if slot.status == "Full" and slot.available_seats > 0:
         slot.status = "Available"
 
 
@@ -315,6 +350,6 @@ def cancel_booking(booking_id, current_user):
 
     flash("Booking cancelled successfully!", "success")
 
-    return redirect(url_for("student.dashboard"))
+    return redirect(url_for("student.dashboard", tab="schedule"))
 
  

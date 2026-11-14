@@ -35,22 +35,22 @@
                     </td>
                     <td><span class="badge text-bg-secondary">{{ examination.status }}</span></td>
                     <td>
-                        {% if examination.status == "Slot Creation" %}
+                        {% if examination.slot_creation_open %}
                         <form method="POST" action="{{ url_for('admin.toggle_slot_creation', examination_id=examination.id, action='close') }}">
                             <button class="btn btn-sm btn-warning" type="submit">Close</button>
                         </form>
-                        {% elif examination.status not in ["Completed", "Cancelled", "Booking Open"] %}
+                        {% elif examination.status not in ["Completed", "Cancelled", "Draft"] %}
                         <form method="POST" action="{{ url_for('admin.toggle_slot_creation', examination_id=examination.id, action='open') }}">
                             <button class="btn btn-sm btn-outline-success" type="submit">Open</button>
                         </form>
                         {% else %}<span class="text-muted">Closed</span>{% endif %}
                     </td>
                     <td>
-                        {% if examination.status == "Booking Open" %}
+                        {% if examination.booking_open %}
                         <form method="POST" action="{{ url_for('admin.toggle_slot_booking', examination_id=examination.id, action='close') }}">
                             <button class="btn btn-sm btn-warning" type="submit">Close</button>
                         </form>
-                        {% elif examination.status not in ["Completed", "Cancelled", "Draft", "Slot Creation"] %}
+                        {% elif examination.status not in ["Completed", "Cancelled", "Draft"] %}
                         <form method="POST" action="{{ url_for('admin.toggle_slot_booking', examination_id=examination.id, action='open') }}">
                             <button class="btn btn-sm btn-outline-success" type="submit">Open</button>
                         </form>
@@ -76,7 +76,11 @@
 </section>
 
 <section class="card shadow-sm mb-4" id="slots">
-    <div class="card-header"><h2 class="h5 mb-0">All examination slots</h2></div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">All examination slots</h2>
+        <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal"
+            data-bs-target="#create-slot">Add slot</button>
+    </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
@@ -104,6 +108,64 @@
         </table>
     </div>
 </section>
+
+<div class="modal fade" id="create-slot" tabindex="-1" aria-labelledby="create-slot-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.create_slot') }}">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="create-slot-label">Add examination slot</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" for="slot-examination">Examination</label>
+                    <select class="form-select mb-3" id="slot-examination" name="examination_id" required>
+                        <option value="">Choose examination</option>
+                        {% for examination in all_examinations if examination.status not in ["Cancelled", "Completed"] %}
+                        <option value="{{ examination.id }}">
+                            {{ examination.name }} ({{ examination.course.course_code }})
+                        </option>
+                        {% else %}
+                        <option value="" disabled>No eligible examinations</option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label" for="slot-examiner">Approved examiner</label>
+                    <select class="form-select mb-3" id="slot-examiner" name="examiner_id" required>
+                        <option value="">Choose examiner</option>
+                        {% for examiner in all_examiners if examiner.role == "Examiner" and examiner.status == "Approved" %}
+                        <option value="{{ examiner.id }}">{{ examiner.name }} ({{ examiner.email }})</option>
+                        {% else %}
+                        <option value="" disabled>No approved examiners</option>
+                        {% endfor %}
+                    </select>
+
+                    <label class="form-label" for="slot-date">Date</label>
+                    <input class="form-control mb-3" type="date" id="slot-date" name="date" required>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label" for="slot-start-time">Start time</label>
+                            <input class="form-control" type="time" id="slot-start-time" name="start_time" required>
+                        </div>
+                        <div class="col">
+                            <label class="form-label" for="slot-end-time">End time</label>
+                            <input class="form-control" type="time" id="slot-end-time" name="end_time" required>
+                        </div>
+                    </div>
+
+                    <label class="form-label mt-3" for="slot-capacity">Maximum capacity</label>
+                    <input class="form-control" type="number" id="slot-capacity" name="maximum_capacity"
+                        min="1" step="1" required>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Add slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="create-examination" tabindex="-1"
     aria-labelledby="create-examination-label" aria-hidden="true">

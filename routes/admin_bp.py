@@ -22,8 +22,10 @@ admin_bp= Blueprint(
     "admin",__name__,url_prefix="/api/admin"
 )
 
-def render_admin_dashboard():
+def render_admin_dashboard(active_tab=None):
     search_query = request.args.get("q", "").strip()
+    if active_tab is None:
+        active_tab = "search" if search_query else "dashboard"
     pattern = f"%{search_query}%"
     record_id = int(search_query) if search_query.isdigit() else None
 
@@ -82,6 +84,7 @@ def render_admin_dashboard():
     return render_template(
         "admin/dashboard.html",
         search=search_query,
+        active_tab=active_tab,
         courses=courses,
         examinations=examinations,
         examiners=examiners,
@@ -152,10 +155,6 @@ def create_course():
     return render_admin_dashboard()
  
 
-# Update an existing course, method PUT
-# course_id ? database -- > search --> fetch course 
-
-
 
 
 
@@ -211,8 +210,6 @@ def delete_courses(course_id):
     flash("Course deleted successfully.", "success")
     return redirect(url_for("admin.create_course"))
 
-# CREATE EXAMINATION
-
 @admin_bp.route("/examinations", methods=["GET", "POST"])
 def create_examination():
 
@@ -266,12 +263,12 @@ def create_examination():
         flash("Examination created successfully!")
         return redirect(url_for("admin.create_examination"))
 
-    return render_admin_dashboard()
+    return render_admin_dashboard(active_tab="examination")
 
 
 
 
-# UPDATE EXAMINATION
+
 
 @admin_bp.route("/examinations/<int:examination_id>", methods=["GET", "POST"])
 def update_examination(examination_id):
@@ -338,7 +335,7 @@ def update_examination(examination_id):
 
 
  
-# DELETE EXAMINATION
+
 
 @admin_bp.route("/examinations/<int:examination_id>/delete", methods=["POST"])
 def delete_examination(examination_id):
@@ -365,13 +362,7 @@ def delete_examination(examination_id):
 
  
 
-# CREATE RUBRIC
 
-# ==========================================
-# EXAMINATION RUBRIC MANAGEMENT
-# ==========================================
-
-# Display all rubrics and create a new rubric.
 @admin_bp.route("/rubrics", methods=["GET", "POST"])
 def rubrics():
 
@@ -429,12 +420,11 @@ def rubrics():
     return render_admin_dashboard()
 
 
-# Edit an existing rubric.
 @admin_bp.route("/rubrics/<int:rubric_id>/edit", methods=["GET", "POST"])
 def edit_rubric(rubric_id):
 
-    rubric =ExaminationRubric.query.filter_by(rubric_id=rubric_id)
-    
+    rubric = db.session.get(ExaminationRubric, rubric_id)
+
     if not rubric:
         flash("Rubric not found.", "danger")
         return redirect(url_for("admin.rubrics"))
@@ -447,33 +437,44 @@ def edit_rubric(rubric_id):
         weightage = request.form.get("weightage")
         description = request.form.get("description")
 
-        if not examination_id or not criterion_name or not maximum_marks or weightage is None:
+        if (
+            not examination_id
+            or not criterion_name
+            or not criterion_name.strip()
+            or not maximum_marks
+            or weightage is None
+        ):
             flash("Please fill all required fields.", "danger")
             return redirect(url_for("admin.edit_rubric", rubric_id=rubric.id))
 
-        examination =Examination.query.filter_by(examination_id=examination_id)
-        
-        
+        try:
+            examination_id = int(examination_id)
+        except (ValueError, TypeError):
+            flash("Selected examination does not exist.", "danger")
+            return redirect(url_for("admin.edit_rubric", rubric_id=rubric.id))
+
+        examination = db.session.get(Examination, examination_id)
 
         if not examination:
             flash("Selected examination does not exist.", "danger")
             return redirect(url_for("admin.edit_rubric", rubric_id=rubric.id))
 
-
-        maximum_marks = float(maximum_marks)
-        weightage = float(weightage)
-       
+        try:
+            maximum_marks = float(maximum_marks)
+            weightage = float(weightage)
+        except (ValueError, TypeError):
+            flash("Marks and weightage must be valid numbers.", "danger")
+            return redirect(url_for("admin.edit_rubric", rubric_id=rubric.id))
 
         if maximum_marks <= 0 or not 0 <= weightage <= 100:
             flash("Invalid marks or weightage.", "danger")
             return redirect(url_for("admin.edit_rubric", rubric_id=rubric.id))
 
-        # Update rubric.
-        rubric.staus = examination.id
+        rubric.examination_id = examination.id
         rubric.criterion_name = criterion_name.strip()
         rubric.maximum_marks = maximum_marks
         rubric.weightage = weightage
-        rubric.description = description.strip()
+        rubric.description = (description or "").strip()
 
         db.session.commit()
 
@@ -489,7 +490,6 @@ def edit_rubric(rubric_id):
     )
 
 
-# Delete a rubric.
 @admin_bp.route("/rubrics/<int:rubric_id>/delete", methods=["POST"])
 def delete_rubric(rubric_id):
 
@@ -497,6 +497,13 @@ def delete_rubric(rubric_id):
 
     if not rubric:
         flash("Rubric not found.", "danger")
+        return redirect(url_for("admin.rubrics"))
+
+    if EvaluationDetail.query.filter_by(rubric_id=rubric.id).first():
+        flash(
+            "This rubric has been deleted.",
+            "warning"
+        )
         return redirect(url_for("admin.rubrics"))
 
     db.session.delete(rubric)
@@ -660,33 +667,37 @@ def update_examination_timeline(examination_id):
         flash("Examination not found.", "danger")
         return redirect(url_for("admin.create_examination"))
 
-    fields=[
+    fields = [
         "slot_creation_start",
         "slot_creation_end",
         "slot_booking_start",
         "slot_booking_end",
     ]
 
-    
-    slot_creation_start=request.form.get("slot_creation_start")
-    slot_creation_end=request.form.get("slot_creation_end")
-    slot_booking_start=request.form.get("slot_booking_start")
-    slot_booking_end=request.form.get("slot_booking_end")
+    try:
+        dates = {
+            field: datetime.strptime(
+                request.form.get(field, ""),
+                "%Y-%m-%dT%H:%M",
+            )
+            for field in fields
+        }
+    except (TypeError, ValueError):
+        flash("Please provide valid dates for all examination timelines.", "danger")
+        return redirect(url_for("admin.create_examination"))
 
-    dates={}
-    dates["slot_creation_start"]=datetime.strptime(slot_creation_start,"%Y-%m-%dT%H:%M")
-    dates["slot_creation_end"]=datetime.strptime(slot_creation_end,"%Y-%m-%dT%H:%M")
-    dates["slot_booking_start"]=datetime.strptime(slot_booking_start,"%Y-%m-%dT%H:%M")
-    dates["slot_booking_end"]=datetime.strptime(slot_booking_end,"%Y-%m-%dT%H:%M")
-
-    if dates["slot_creation_start"] and dates["slot_creation_end"] and dates["slot_creation_start"] >= dates["slot_creation_end"]:
+    if dates["slot_creation_start"] >= dates["slot_creation_end"]:
         flash("Slot creation start date must be before end date.", "danger")
         return redirect(url_for("admin.create_examination"))
-    
-    examination.slot_creation_start=dates["slot_creation_start"]
-    examination.slot_creation_end=dates["slot_creation_end"]
-    examination.slot_booking_start=dates["slot_booking_start"]
-    examination.slot_booking_end=dates["slot_booking_end"]
+
+    if dates["slot_booking_start"] >= dates["slot_booking_end"]:
+        flash("Student booking start date must be before end date.", "danger")
+        return redirect(url_for("admin.create_examination"))
+
+    examination.slot_creation_start = dates["slot_creation_start"]
+    examination.slot_creation_end = dates["slot_creation_end"]
+    examination.slot_booking_start = dates["slot_booking_start"]
+    examination.slot_booking_end = dates["slot_booking_end"]
     db.session.commit()
 
     
@@ -749,6 +760,10 @@ def toggle_slot_booking(examination_id, action):
 
         if not examination.slot_booking_start or not examination.slot_booking_end:
             flash("Configure student booking timeline first.", "danger")
+            return redirect(url_for("admin.create_examination"))
+
+        if examination.slot_booking_start >= examination.slot_booking_end:
+            flash("Student booking start date must be before end date.", "danger")
             return redirect(url_for("admin.create_examination"))
 
         examination.booking_open = True
@@ -881,6 +896,79 @@ def reschedule_booking(booking_id):
     return redirect(url_for("admin.bookings"))
 
 
+
+
+@admin_bp.route("/slots", methods=["POST"])
+def create_slot():
+    examination_id = request.form.get("examination_id", type=int)
+    examiner_id = request.form.get("examiner_id", type=int)
+
+    examination = db.session.get(Examination, examination_id) if examination_id else None
+    examiner = User.query.filter_by(
+        id=examiner_id,
+        role="Examiner",
+        status="Approved",
+    ).first() if examiner_id else None
+
+    if not examination:
+        flash("Select a valid examination.", "danger")
+        return redirect(url_for("admin.create_examination"))
+
+    if examination.status in ["Cancelled", "Completed"]:
+        flash("Slots cannot be added to cancelled or completed examinations.", "danger")
+        return redirect(url_for("admin.create_examination"))
+
+    if not examiner:
+        flash("Select an approved examiner.", "danger")
+        return redirect(url_for("admin.create_examination"))
+
+    try:
+        slot_date = datetime.strptime(
+            request.form.get("date", ""),
+            "%Y-%m-%d",
+        ).date()
+        start_time = datetime.strptime(
+            request.form.get("start_time", ""),
+            "%H:%M",
+        ).time()
+        end_time = datetime.strptime(
+            request.form.get("end_time", ""),
+            "%H:%M",
+        ).time()
+        capacity = int(request.form.get("maximum_capacity", ""))
+    except (TypeError, ValueError):
+        flash("Enter a valid date, time, and capacity.", "danger")
+        return redirect(url_for("admin.create_examination"))
+
+    if start_time >= end_time or capacity <= 0:
+        flash("Enter a valid time range and a capacity greater than zero.", "danger")
+        return redirect(url_for("admin.create_examination"))
+
+    conflict = ExaminationSlot.query.filter(
+        ExaminationSlot.examiner_id == examiner.id,
+        ExaminationSlot.date == slot_date,
+        ExaminationSlot.status.notin_(["Cancelled", "Completed"]),
+        ExaminationSlot.start_time < end_time,
+        ExaminationSlot.end_time > start_time,
+    ).first()
+
+    if conflict:
+        flash("This examiner already has another examination during that time.", "danger")
+        return redirect(url_for("admin.create_examination"))
+
+    slot = ExaminationSlot(
+        examination_id=examination.id,
+        examiner_id=examiner.id,
+        date=slot_date,
+        start_time=start_time,
+        end_time=end_time,
+        maximum_capacity=capacity,
+    )
+    db.session.add(slot)
+    db.session.commit()
+
+    flash("Examination slot added successfully.", "success")
+    return redirect(url_for("admin.create_examination"))
 
 
 @admin_bp.route(
